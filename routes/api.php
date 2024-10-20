@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Validator;
 
 Route::get('test', function () {
     return "Hola Ismael";
@@ -43,4 +46,63 @@ Route::get('/random/{min}/{max}', function ($min, $max) {
         'random' => $number
     ], 200);
 
+});
+
+//- Versionados de rutas de la api
+Route::prefix('v1')->group(function () {
+
+    //- Listar todos los usuarios
+    Route::get('users', function () {
+        $user = User::all();
+        return response()->json(["success"=>$user], 200);
+    });
+
+    //- Crea usuarios
+    Route::post('users', function (Request $request) {
+        //- Validar el request
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+        ]);
+
+        //- La respuesta de la validación
+        if ($validator->fails()) {
+            return response()->json(["error"=>$validator->errors()], 400);
+        }
+        //- Predeterminada la contraseña
+        $request['password'] = bcrypt('password');
+
+        //- Crear el usuario
+        $user = User::create($request->all());
+        return response()->json($user, 201);
+    });
+});
+
+//- Versionados de rutas de la api version 2
+Route::prefix('v2')->group(function () {
+
+    //- Listar todos los usuarios
+    Route::get('users', function () {
+        $user = User::select('id', 'name', 'email')->get();
+        return response()->json(["success"=>$user], 200);
+    });
+
+    //- Crea usuarios
+    Route::post('users', function (Request $request) {
+        //- Validar el request
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:8',
+        ]);
+
+        //- La respuesta de la validación
+        if ($validator->fails()) {
+            return response()->json(["error"=>$validator->errors()], 400);
+        }
+
+        //- Crear el usuario
+        $user = User::create($request->all());
+        return response()->json($user, 201);
+    });
 });
