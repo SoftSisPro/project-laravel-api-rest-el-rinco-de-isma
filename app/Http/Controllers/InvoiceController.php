@@ -7,15 +7,29 @@ use App\Http\Requests\UpdateInvoiceRequest;
 use App\Http\Resources\InvoiceCollection;
 use App\Models\Invoice;
 
+use Illuminate\Http\Request;
+use App\Filters\InvoiceFilter;
+
 class InvoiceController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $invoices = Invoice::paginate(10);
-        return new InvoiceCollection($invoices);
+        # Instancia de la clase CustomerFilter
+        $filter = new InvoiceFilter();
+        # Transforma los datos de la petición
+        $queryItems = $filter->transform($request);
+        # Validamos si no hay datos en la consulta
+        if(count($queryItems) == 0){
+            return new InvoiceCollection(Invoice::paginate(10));
+        }else{
+            # Pagina los datos y hace la consulta
+            $invoices = Invoice::where($queryItems)->paginate(10);
+            # Retorna la colección de datos paginados
+            return new InvoiceCollection($invoices->appends($request->query()));
+        }
     }
 
     /**
