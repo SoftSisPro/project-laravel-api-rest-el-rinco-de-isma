@@ -5,18 +5,39 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerCollection;
+
 use App\Models\Customer;
+use Illuminate\Http\Request;
+use App\Filters\CustomerFilter;
 
 class CustomerController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //$customers = Customer::all();
-        $customers = Customer::paginate(10);
+
+        # Instancia de la clase CustomerFilter
+        $filter = new CustomerFilter();
+        # Transforma los datos de la petición
+        $queryItems = $filter->transform($request);
+        # Pagina los datos y hace la consulta
+        $customers = Customer::where($queryItems)->paginate(10);
+        //- Validamos si solicita los invoices
+        $includeInvoices = $request->query('includeInvoices');
+        if ($includeInvoices) {
+            $customers->load('invoices');
+        }
+        # Retorna la colección de datos paginados
+        return new CustomerCollection($customers->appends($request->query()));
+
+        //$customers = Customer::all(); # Vista normal
+
+        /* Vista con coleccion
+        $customers = Customer::paginate(10); #
         return new CustomerCollection($customers);
+        */
     }
 
     /**
