@@ -12,7 +12,10 @@ class UpdateCustomerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        // Obtener el usuario autenticado
+        $user = auth()->user();
+        // Verificar si el usuario tiene un token con el permiso 'update'
+        return $user && $user->tokenCan('update');
     }
 
     /**
