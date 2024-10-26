@@ -32,13 +32,6 @@ class CustomerController extends Controller
         }
         # Retorna la colección de datos paginados
         return new CustomerCollection($customers->appends($request->query()));
-
-        //$customers = Customer::all(); # Vista normal
-
-        /* Vista con coleccion
-        $customers = Customer::paginate(10); #
-        return new CustomerCollection($customers);
-        */
     }
 
     /**
