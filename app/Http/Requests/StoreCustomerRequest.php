@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCustomerRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class StoreCustomerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +23,24 @@ class StoreCustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required', 'string'],
+            'type' => ['required', 'string', Rule::in(['I','i','B','b'])],
+            'email' => ['required', 'string', 'email', 'unique:customers'],
+            'phone' => ['required', 'digits:10'],
+            'address' => ['required', 'string'],
+            'city' => ['required', 'string'],
+            'state' => ['required', 'string'],
+            'postalCode' => ['required', 'string'],
         ];
+    }
+
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'name' => ucwords($this->name),
+            'city' => ucwords($this->city),
+            'state' => ucwords($this->state),
+            'postal_code' => strtoupper($this->postalCode),
+        ]);
     }
 }

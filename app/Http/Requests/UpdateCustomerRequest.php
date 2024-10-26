@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateCustomerRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class UpdateCustomerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,8 +22,42 @@ class UpdateCustomerRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            //
-        ];
+        $method = $this->method();
+        if($method == 'PUT'){
+            return [
+                'name' => ['required', 'string'],
+                'type' => ['required', 'string', Rule::in(['I','i','B','b'])],
+                'email' => ['required', 'string', 'email', Rule::unique('customers')->ignore($this->customer)],
+                'phone' => ['required', 'digits:10'],
+                'address' => ['required', 'string'],
+                'city' => ['required', 'string'],
+                'state' => ['required', 'string'],
+                'postalCode' => ['required', 'string'],
+            ];
+        }else{
+            return [
+                'name' => ['sometimes', 'string'],
+                'type' => ['sometimes', 'string', Rule::in(['I','i','B','b'])],
+                'email' => ['sometimes', 'string', 'email', Rule::unique('customers')->ignore($this->customer)],
+                'phone' => ['sometimes', 'digits:10'],
+                'address' => ['sometimes', 'string'],
+                'city' => ['sometimes', 'string'],
+                'state' => ['sometimes', 'string'],
+                'postalCode' => ['sometimes', 'string'],
+            ];
+        }
+    }
+
+    protected function prepareForValidation()
+    {
+        $fieldsToUpper = ['postalCode', 'name', 'city', 'state'];
+
+        foreach ($fieldsToUpper as $field) {
+            if ($this->has($field)) {
+                $this->merge([
+                    $field => $field === 'postalCode' ? strtoupper($this->$field) : ucwords($this->$field),
+                ]);
+            }
+        }
     }
 }
