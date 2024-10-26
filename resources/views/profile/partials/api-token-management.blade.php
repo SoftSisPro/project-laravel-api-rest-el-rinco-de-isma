@@ -9,8 +9,17 @@
         </p>
     </header>
     <div class="mt-6 space-y-6">
-    @dump($user->tokens)
-
+        {{-- @dump($tokens) --}}
+        @isset($tokens)
+            @foreach ($tokens as $name => $token )
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-indigo-600 mb-3 capitalize">{{ $name }}</p>
+                        <code class="text-sm text-white bg-gray-900 p-3 rounded-lg">{!! $token !!}</code>
+                    </div>
+                </div>
+            @endforeach
+        @endisset
     </div>
 
 </section>
